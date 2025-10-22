@@ -1,0 +1,102 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  NODE_VERSION: '20.x'
+
+steps:
+  - checkout: self
+    fetchDepth: 1
+
+  - task: NodeTool@0
+    inputs:
+      versionSpec: $(NODE_VERSION)
+    displayName: 'Use Node.js $(NODE_VERSION)'
+
+  - task: Cache@2
+    inputs:
+      key: 'npm | "$(Agent.OS)" | package-lock.json'
+      path: '$(Pipeline.Workspace)/.npm'
+      cacheHitVar: 'NpmCacheRestored'
+    displayName: 'Cache NPM'
+
+  - script: |
+      npm ci --cache $(Pipeline.Workspace)/.npm --prefer-offline
+    displayName: 'Install dependencies'
+
+  - script: |
+      npx playwright install --with-deps
+    displayName: 'Install Playwright browsers'
+
+  - script: |
+      echo "BASE_URL=$(BASE_URL)"
+      npm run test:all
+    displayName: 'Run Playwright tests'
+    env:
+      BASE_URL: $(BASE_URL)
+
+  - task: PublishTestResults@2
+    displayName: 'Publish JUnit test results'
+    inputs:
+      testResultsFormat: 'JUnit'
+      testResultsFiles: 'reports/junit/results.xml'
+      testRunTitle: 'Playwright tests'
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      PathtoPublish: 'reports/html'
+      ArtifactName: 'PlaywrightHtmlReport'
+      publishLocation: 'Container'
+    displayName: 'Publish HTML report artifact'
+
+  - script: |
+      echo "# Playwright Test Report" > summary.md
+      echo "" >> summary.md
+      echo "Find the full HTML report in the **PlaywrightHtmlReport** artifact." >> summary.md
+      echo "" >> summary.md
+      echo "If tests failed, check the **Attachments** for traces and videos." >> summary.md
+      echo "BASE_URL used: $(BASE_URL)" >> summary.md
+      echo "Project: $(Build.Repository.Name)" >> summary.md
+      echo "Build: $(Build.BuildNumber)" >> summary.md
+      echo "Date: $(Build.QueuedDate)" >> summary.md
+      echo "Agent: $(Agent.OS)" >> summary.md
+      echo "Node: $(NODE_VERSION)" >> summary.md
+      echo " " >> summary.md
+      echo " " >> summary.md
+      echo " " >> summary.md
+      echo " " >> summary.md
+      echo " " >> summary.md
+      echo " " >> summary.md
+      echo " " >> summary.md
+      echo " " >> summary.md
+      echo " " >> summary.md
+      echo " " >> summary.md
+      echo " " >> summary.md
+      echo " " >> summary.md
+      echo " " >> summary.md
+      echo " " >> summary.md
+      echo " " >> summary.md
+      echo " " >> summary.md
+      echo " " >> summary.md
+      echo " " >> summary.md
+      echo " " >> summary.md
+      echo " " >> summary.md
+      echo " " >> summary.md
+      echo " " >> summary.md
+      echo " " >> summary.md
+      echo " " >> summary.md
+      echo " " >> summary.md
+      echo " " >> summary.md
+      echo " " >> summary.md
+      echo " " >> summary.md
+      echo " " >> summary.md
+      echo " " >> summary.md
+      echo " " >> summary.md
+      echo " " >> summary.md
+      echo "##vso[task.uploadsummary]summary.md"
+    displayName: 'Attach summary to pipeline'

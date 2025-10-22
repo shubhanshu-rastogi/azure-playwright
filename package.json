@@ -1,0 +1,17 @@
+{
+  "name": "azure-testing-starter",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Playwright UI + API test starter with Azure DevOps pipeline.",
+  "scripts": {
+    "pretest": "mkdir -p reports/junit reports/html || true",
+    "test:ui": "playwright test tests/ui --reporter=list,junit,html",
+    "test:api": "playwright test tests/api --reporter=list,junit,html",
+    "test:all": "playwright test --reporter=list,junit,html",
+    "pw:install": "playwright install --with-deps"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.2",
+    "typescript": "^5.6.2"
+  }
+}
