@@ -34,6 +34,10 @@ steps:
     displayName: 'Install Playwright browsers'
 
   - script: |
+      mkdir -p reports/junit reports/html
+    displayName: 'Prepare report folders'
+
+  - script: |
       echo "BASE_URL=$(BASE_URL)"
       npm run test:all
     displayName: 'Run Playwright tests'
