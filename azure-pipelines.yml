@@ -46,61 +46,39 @@ steps:
 
   - task: PublishTestResults@2
     displayName: 'Publish JUnit test results'
+    condition: always()                # run even if tests fail
     inputs:
       testResultsFormat: 'JUnit'
-      testResultsFiles: 'reports/junit/results.xml'
+      testResultsFiles: 'reports/junit/**/*.xml'
       testRunTitle: 'Playwright tests'
+      failTaskOnFailedTests: false
 
   - task: PublishBuildArtifacts@1
+    displayName: 'Publish HTML report artifact'
+    condition: always()                # run even if tests fail
     inputs:
       PathtoPublish: 'reports/html'
       ArtifactName: 'PlaywrightHtmlReport'
       publishLocation: 'Container'
-    displayName: 'Publish HTML report artifact'
 
   - script: |
-      echo "# Playwright Test Report" > summary.md
-      echo "" >> summary.md
-      echo "Find the full HTML report in the **PlaywrightHtmlReport** artifact." >> summary.md
-      echo "" >> summary.md
-      echo "If tests failed, check the **Attachments** for traces and videos." >> summary.md
-      echo "BASE_URL used: $(BASE_URL)" >> summary.md
-      echo "Project: $(Build.Repository.Name)" >> summary.md
-      echo "Build: $(Build.BuildNumber)" >> summary.md
-      echo "Date: $(Build.QueuedDate)" >> summary.md
-      echo "Agent: $(Agent.OS)" >> summary.md
-      echo "Node: $(NODE_VERSION)" >> summary.md
-      echo " " >> summary.md
-      echo " " >> summary.md
-      echo " " >> summary.md
-      echo " " >> summary.md
-      echo " " >> summary.md
-      echo " " >> summary.md
-      echo " " >> summary.md
-      echo " " >> summary.md
-      echo " " >> summary.md
-      echo " " >> summary.md
-      echo " " >> summary.md
-      echo " " >> summary.md
-      echo " " >> summary.md
-      echo " " >> summary.md
-      echo " " >> summary.md
-      echo " " >> summary.md
-      echo " " >> summary.md
-      echo " " >> summary.md
-      echo " " >> summary.md
-      echo " " >> summary.md
-      echo " " >> summary.md
-      echo " " >> summary.md
-      echo " " >> summary.md
-      echo " " >> summary.md
-      echo " " >> summary.md
-      echo " " >> summary.md
-      echo " " >> summary.md
-      echo " " >> summary.md
-      echo " " >> summary.md
-      echo " " >> summary.md
-      echo " " >> summary.md
-      echo " " >> summary.md
-      echo "##vso[task.uploadsummary]summary.md"
+      SUMMARY="$(Build.SourcesDirectory)/summary.md"
+      echo "# Playwright Test Report" > "$SUMMARY"
+      echo "" >> "$SUMMARY"
+      echo "Find the full HTML report in the **PlaywrightHtmlReport** artifact." >> "$SUMMARY"
+      echo "" >> "$SUMMARY"
+      echo "If tests failed, check the **Attachments** for traces and videos." >> "$SUMMARY"
+      echo "" >> "$SUMMARY"
+      echo "BASE_URL used: $(BASE_URL)" >> "$SUMMARY"
+      echo "Project: $(Build.Repository.Name)" >> "$SUMMARY"
+      echo "Build: $(Build.BuildNumber)" >> "$SUMMARY"
+      echo "Date: $(Build.QueuedDate)" >> "$SUMMARY"
+      echo "Agent: $(Agent.OS)" >> "$SUMMARY"
+      echo "Node: $(NODE_VERSION)" >> "$SUMMARY"
+      if [ -f "$SUMMARY" ]; then
+        echo "##vso[task.uploadsummary]$SUMMARY"
+      else
+        echo "Summary file was not created"; exit 1
+      fi
     displayName: 'Attach summary to pipeline'
+    condition: always()                # run even if tests fail
